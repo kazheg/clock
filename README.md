@@ -46,5 +46,6 @@ Nếu bạn muốn đóng góp vào dự án này, xin vui lòng:
 4.  **Tạo một Pull Request** trên GitHub.
 
 ## Tác giả
+Phong Trần
 
-* github.com/kazheg
+Dự án này đã có giấy phép MIT. Xem tệp LICENSE để biết thêm chi tiết
