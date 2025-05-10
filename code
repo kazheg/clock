@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đồng Hồ Đếm Ngược Đa Năng</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap');
+        
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: linear-gradient(135deg, #0a4da2 0%, #7928ca 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            overflow-x: hidden;
+        }
+        
+        .timer-container {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            margin: 0 auto;
+        }
+        
+        .timer-circle {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 0 30px rgba(255, 255, 255, 0.2);
+        }
+        
+        .timer-display {
+            font-size: 3.5rem;
+            font-weight: 700;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+        
+        .pulse {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+            opacity: 0;
+        }
+        
+        @keyframes pulse {
+            0% {
+                transform: scale(0.95);
+                box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.5);
+                opacity: 0.7;
+            }
+            
+            70% {
+                transform: scale(1);
+                box-shadow: 0 0 0 20px rgba(255, 255, 255, 0);
+                opacity: 0;
+            }
+            
+            100% {
+                transform: scale(0.95);
+                box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+                opacity: 0;
+            }
+        }
+        
+        .wave {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            animation: wave 3s infinite linear;
+            opacity: 0;
+        }
+        
+        @keyframes wave {
+            0% {
+                transform: scale(0.8);
+                opacity: 0.5;
+            }
+            
+            100% {
+                transform: scale(1.5);
+                opacity: 0;
+            }
+        }
+        
+        .progress-ring {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .btn {
+            transition: all 0.3s ease;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .preset-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            transition: all 0.3s ease;
+        }
+        
+        .preset-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .custom-preset-form {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease;
+        }
+        
+        .custom-preset-form.active {
+            max-height: 300px;
+        }
+        
+        .favorite-btn.active {
+            color: #FFD700;
+        }
+        
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal-content {
+            background: linear-gradient(135deg, #1a3b6d 0%, #5a2c99 100%);
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            transform: translateY(-50px);
+            transition: all 0.3s ease;
+        }
+        
+        .modal.active .modal-content {
+            transform: translateY(0);
+        }
+        
+        /* Custom slider styling */
+        input[type="range"] {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 8px;
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.2);
+            outline: none;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: white;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body class="p-4">
+    <div class="container mx-auto max-w-4xl">
+        <h1 class="text-4xl font-bold text-center mb-8 text-white">Đồng Hồ Đếm Ngược Đa Năng</h1>
+        
+        <div class="flex flex-col lg:flex-row gap-8">
+            <!-- Timer Section -->
+            <div class="lg:w-1/2">
+                <div class="bg-white/10 backdrop-blur-md rounded-3xl p-8 shadow-xl">
+                    <div class="timer-container">
+                        <div class="pulse"></div>
+                        <div class="wave"></div>
+                        <div class="timer-circle">
+                            <div class="timer-display" id="timer">15:00</div>
+                        </div>
+                        <svg class="progress-ring" viewBox="0 0 100 100">
+                            <circle cx="50" cy="50" r="45" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="5" />
+                            <circle id="progress-ring-circle" cx="50" cy="50" r="45" fill="none" stroke="white" stroke-width="5" stroke-dasharray="283" stroke-dashoffset="0" transform="rotate(-90 50 50)" />
+                        </svg>
+                    </div>
+                    
+                    <div class="flex justify-center gap-4 mt-8">
+                        <button id="startBtn" class="btn bg-white/20 hover:bg-white/30 text-white font-bold py-3 px-6 rounded-full flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            Bắt đầu
+                        </button>
+                        <button id="pauseBtn" class="btn bg-white/20 hover:bg-white/30 text-white font-bold py-3 px-6 rounded-full flex items-center hidden">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            Tạm dừng
+                        </button>
+                        <button id="resetBtn" class="btn bg-white/20 hover:bg-white/30 text-white font-bold py-3 px-6 rounded-full flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                            </svg>
+                            Đặt lại
+                        </button>
+                    </div>
+                    
+                    <div class="mt-8">
+                        <label class="block text-white text-sm font-medium mb-2">Điều chỉnh thời gian (phút)</label>
+                        <div class="flex items-center gap-4">
+                            <input type="range" id="timeSlider" min="1" max="60" value="15" class="w-full">
+                            <span id="timeValue" class="text-xl font-bold">15</span>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-6 flex justify-between items-center">
+                        <button id="favoriteBtn" class="favorite-btn flex items-center text-white">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                            </svg>
+                            Lưu yêu thích
+                        </button>
+                        <button id="settingsBtn" class="flex items-center text-white">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                            Cài đặt
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Presets Section -->
+            <div class="lg:w-1/2">
+                <div class="bg-white/10 backdrop-blur-md rounded-3xl p-8 shadow-xl">
+                    <h2 class="text-2xl font-bold mb-6">Chế độ đếm ngược</h2>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="preset-card p-4 cursor-pointer" data-time="5">
+                            <h3 class="font-bold text-lg">Luộc trứng</h3>
+                            <p class="text-sm text-white/80">5 phút</p>
+                        </div>
+                        <div class="preset-card p-4 cursor-pointer" data-time="25">
+                            <h3 class="font-bold text-lg">Pomodoro</h3>
+                            <p class="text-sm text-white/80">25 phút</p>
+                        </div>
+                        <div class="preset-card p-4 cursor-pointer" data-time="15">
+                            <h3 class="font-bold text-lg">Thiền</h3>
+                            <p class="text-sm text-white/80">15 phút</p>
+                        </div>
+                        <div class="preset-card p-4 cursor-pointer" data-time="10">
+                            <h3 class="font-bold text-lg">Nghỉ giải lao</h3>
+                            <p class="text-sm text-white/80">10 phút</p>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-6">
+                        <button id="addPresetBtn" class="w-full py-3 bg-white/20 hover:bg-white/30 rounded-lg flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                            </svg>
+                            Thêm chế độ mới
+                        </button>
+                    </div>
+                    
+                    <div id="customPresetForm" class="custom-preset-form mt-4">
+                        <div class="bg-white/10 p-4 rounded-lg">
+                            <div class="mb-4">
+                                <label class="block text-sm font-medium mb-2">Tên chế độ</label>
+                                <input type="text" id="presetName" class="w-full bg-white/20 rounded-lg px-4 py-2 text-white" placeholder="Nhập tên chế độ">
+                            </div>
+                            <div class="mb-4">
+                                <label class="block text-sm font-medium mb-2">Thời gian (phút)</label>
+                                <input type="number" id="presetTime" class="w-full bg-white/20 rounded-lg px-4 py-2 text-white" min="1" max="60" value="10">
+                            </div>
+                            <div class="flex gap-2">
+                                <button id="savePresetBtn" class="flex-1 bg-white/20 hover:bg-white/30 py-2 rounded-lg">Lưu</button>
+                                <button id="cancelPresetBtn" class="flex-1 bg-white/10 hover:bg-white/20 py-2 rounded-lg">Hủy</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-6">
+                        <h3 class="font-bold mb-3">Đã lưu yêu thích</h3>
+                        <div id="favoritesList" class="space-y-2">
+                            <!-- Favorites will be added here dynamically -->
+                            <p id="noFavoritesMsg" class="text-white/60 text-sm">Chưa có chế độ yêu thích nào</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="modal">
+        <div class="modal-content">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold">Cài đặt</h2>
+                <button id="closeSettingsBtn" class="text-white">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            
+            <div class="space-y-6">
+                <div>
+                    <label class="block text-sm font-medium mb-2">Hiệu ứng đồ họa</label>
+                    <div class="grid grid-cols-2 gap-3">
+                        <label class="flex items-center bg-white/10 p-3 rounded-lg cursor-pointer">
+                            <input type="checkbox" id="pulseEffect" class="mr-2" checked>
+                            <span>Hiệu ứng nhịp</span>
+                        </label>
+                        <label class="flex items-center bg-white/10 p-3 rounded-lg cursor-pointer">
+                            <input type="checkbox" id="waveEffect" class="mr-2" checked>
+                            <span>Hiệu ứng sóng</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium mb-2">Âm thanh</label>
+                    <div class="grid grid-cols-1 gap-3">
+                        <label class="flex items-center bg-white/10 p-3 rounded-lg cursor-pointer">
+                            <input type="checkbox" id="soundEnabled" class="mr-2" checked>
+                            <span>Bật âm thanh khi kết thúc</span>
+                        </label>
+                        <div class="flex items-center">
+                            <span class="mr-2">Âm lượng:</span>
+                            <input type="range" id="volumeSlider" min="0" max="100" value="50" class="w-full">
+                        </div>
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium mb-2">Thông báo</label>
+                    <label class="flex items-center bg-white/10 p-3 rounded-lg cursor-pointer">
+                        <input type="checkbox" id="notificationsEnabled" class="mr-2">
+                        <span>Bật thông báo trên trình duyệt</span>
+                    </label>
+                </div>
+                
+                <button id="saveSettingsBtn" class="w-full bg-white/20 hover:bg-white/30 py-3 rounded-lg mt-4">Lưu cài đặt</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Completion Modal -->
+    <div id="completionModal" class="modal">
+        <div class="modal-content text-center">
+            <div class="mb-6">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+            </div>
+            <h2 class="text-2xl font-bold mb-4">Đã hoàn thành!</h2>
+            <p class="mb-6">Thời gian đếm ngược đã kết thúc.</p>
+            <button id="closeCompletionBtn" class="w-full bg-white/20 hover:bg-white/30 py-3 rounded-lg">Đóng</button>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Elements
+            const timerDisplay = document.getElementById('timer');
+            const startBtn = document.getElementById('startBtn');
+            const pauseBtn = document.getElementById('pauseBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const timeSlider = document.getElementById('timeSlider');
+            const timeValue = document.getElementById('timeValue');
+            const favoriteBtn = document.getElementById('favoriteBtn');
+            const settingsBtn = document.getElementById('settingsBtn');
+            const addPresetBtn = document.getElementById('addPresetBtn');
+            const customPresetForm = document.getElementById('customPresetForm');
+            const savePresetBtn = document.getElementById('savePresetBtn');
+            const cancelPresetBtn = document.getElementById('cancelPresetBtn');
+            const presetName = document.getElementById('presetName');
+            const presetTime = document.getElementById('presetTime');
+            const favoritesList = document.getElementById('favoritesList');
+            const noFavoritesMsg = document.getElementById('noFavoritesMsg');
+            const settingsModal = document.getElementById('settingsModal');
+            const closeSettingsBtn = document.getElementById('closeSettingsBtn');
+            const saveSettingsBtn = document.getElementById('saveSettingsBtn');
+            const completionModal = document.getElementById('completionModal');
+            const closeCompletionBtn = document.getElementById('closeCompletionBtn');
+            const progressRingCircle = document.getElementById('progress-ring-circle');
+            
+            // Settings elements
+            const pulseEffect = document.getElementById('pulseEffect');
+            const waveEffect = document.getElementById('waveEffect');
+            const soundEnabled = document.getElementById('soundEnabled');
+            const volumeSlider = document.getElementById('volumeSlider');
+            const notificationsEnabled = document.getElementById('notificationsEnabled');
+            
+            // Timer variables
+            let timeInSeconds = 15 * 60;
+            let initialTimeInSeconds = timeInSeconds;
+            let timerInterval;
+            let isRunning = false;
+            let isFavorite = false;
+            
+            // Settings
+            let settings = {
+                pulseEffect: true,
+                waveEffect: true,
+                soundEnabled: true,
+                volume: 50,
+                notificationsEnabled: false
+            };
+            
+            // Load settings from localStorage
+            loadSettings();
+            
+            // Load favorites from localStorage
+            loadFavorites();
+            
+            // Apply initial settings
+            applySettings();
+            
+            // Initialize timer display
+            updateTimerDisplay();
+            
+            // Calculate progress ring circumference
+            const circle = progressRingCircle;
+            const radius = circle.r.baseVal.value;
+            const circumference = radius * 2 * Math.PI;
+            circle.style.strokeDasharray = `${circumference} ${circumference}`;
+            updateProgressRing(1);
+            
+            // Event listeners
+            timeSlider.addEventListener('input', function() {
+                timeValue.textContent = this.value;
+                timeInSeconds = parseInt(this.value) * 60;
+                initialTimeInSeconds = timeInSeconds;
+                updateTimerDisplay();
+                updateProgressRing(1);
+            });
+            
+            startBtn.addEventListener('click', startTimer);
+            pauseBtn.addEventListener('click', pauseTimer);
+            resetBtn.addEventListener('click', resetTimer);
+            favoriteBtn.addEventListener('click', toggleFavorite);
+            settingsBtn.addEventListener('click', openSettingsModal);
+            closeSettingsBtn.addEventListener('click', closeSettingsModal);
+            saveSettingsBtn.addEventListener('click', saveSettings);
+            closeCompletionBtn.addEventListener('click', closeCompletionModal);
+            
+            addPresetBtn.addEventListener('click', function() {
+                customPresetForm.classList.toggle('active');
+            });
+            
+            savePresetBtn.addEventListener('click', saveCustomPreset);
+            cancelPresetBtn.addEventListener('click', function() {
+                customPresetForm.classList.remove('active');
+                presetName.value = '';
+                presetTime.value = 10;
+            });
+            
+            // Add event listeners to preset cards
+            document.querySelectorAll('.preset-card').forEach(card => {
+                card.addEventListener('click', function() {
+                    const minutes = parseInt(this.dataset.time);
+                    timeInSeconds = minutes * 60;
+                    initialTimeInSeconds = timeInSeconds;
+                    timeSlider.value = minutes;
+                    timeValue.textContent = minutes;
+                    updateTimerDisplay();
+                    updateProgressRing(1);
+                });
+            });
+            
+            // Timer functions
+            function startTimer() {
+                if (isRunning) return;
+                
+                isRunning = true;
+                startBtn.classList.add('hidden');
+                pauseBtn.classList.remove('hidden');
+                
+                timerInterval = setInterval(function() {
+                    if (timeInSeconds > 0) {
+                        timeInSeconds--;
+                        updateTimerDisplay();
+                        updateProgressRing(timeInSeconds / initialTimeInSeconds);
+                    } else {
+                        clearInterval(timerInterval);
+                        timerComplete();
+                    }
+                }, 1000);
+            }
+            
+            function pauseTimer() {
+                if (!isRunning) return;
+                
+                isRunning = false;
+                clearInterval(timerInterval);
+                startBtn.classList.remove('hidden');
+                pauseBtn.classList.add('hidden');
+            }
+            
+            function resetTimer() {
+                clearInterval(timerInterval);
+                isRunning = false;
+                timeInSeconds = initialTimeInSeconds;
+                updateTimerDisplay();
+                updateProgressRing(1);
+                startBtn.classList.remove('hidden');
+                pauseBtn.classList.add('hidden');
+            }
+            
+            function updateTimerDisplay() {
+                const minutes = Math.floor(timeInSeconds / 60);
+                const seconds = timeInSeconds % 60;
+                timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }
+            
+            function updateProgressRing(progress) {
+                const offset = circumference - progress * circumference;
+                progressRingCircle.style.strokeDashoffset = offset;
+            }
+            
+            function timerComplete() {
+                isRunning = false;
+                startBtn.classList.remove('hidden');
+                pauseBtn.classList.add('hidden');
+                
+                // Play sound if enabled
+                if (settings.soundEnabled) {
+                    playCompletionSound();
+                }
+                
+                // Show notification if enabled
+                if (settings.notificationsEnabled) {
+                    showNotification();
+                }
+                
+                // Show completion modal
+                completionModal.classList.add('active');
+            }
+            
+            function playCompletionSound() {
+                const audio = new Audio('data:audio/wav;base64,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');
+                audio.volume = settings.volume / 100;
+                audio.play();
+            }
+            
+            function showNotification() {
+                if (Notification.permission === "granted") {
+                    new Notification("Đồng hồ đếm ngược", {
+                        body: "Thời gian đếm ngược đã kết thúc!",
+                        icon: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmZmZmYiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48Y2lyY2xlIGN4PSIxMiIgY3k9IjEyIiByPSIxMCI+PC9jaXJjbGU+PHBvbHlsaW5lIHBvaW50cz0iMTIgNiAxMiAxMiAxNiAxNCI+PC9wb2x5bGluZT48L3N2Zz4="
+                    });
+                } else if (Notification.permission !== "denied") {
+                    Notification.requestPermission().then(function(permission) {
+                        if (permission === "granted") {
+                            showNotification();
+                        }
+                    });
+                }
+            }
+            
+            // Favorites functions
+            function toggleFavorite() {
+                isFavorite = !isFavorite;
+                favoriteBtn.classList.toggle('active');
+                
+                if (isFavorite) {
+                    const currentTime = Math.floor(initialTimeInSeconds / 60);
+                    const favoriteItem = {
+                        name: `Chế độ ${currentTime} phút`,
+                        time: currentTime
+                    };
+                    
+                    saveFavorite(favoriteItem);
+                }
+            }
+            
+            function saveFavorite(item) {
+                let favorites = JSON.parse(localStorage.getItem('timerFavorites')) || [];
+                
+                // Check if already exists
+                const exists = favorites.some(fav => fav.name === item.name && fav.time === item.time);
+                
+                if (!exists) {
+                    favorites.push(item);
+                    localStorage.setItem('timerFavorites', JSON.stringify(favorites));
+                    loadFavorites();
+                }
+            }
+            
+            function loadFavorites() {
+                const favorites = JSON.parse(localStorage.getItem('timerFavorites')) || [];
+                
+                if (favorites.length > 0) {
+                    noFavoritesMsg.style.display = 'none';
+                    favoritesList.innerHTML = '';
+                    
+                    favorites.forEach(fav => {
+                        const favItem = document.createElement('div');
+                        favItem.className = 'flex justify-between items-center bg-white/10 p-3 rounded-lg';
+                        favItem.innerHTML = `
+                            <div>
+                                <h4 class="font-medium">${fav.name}</h4>
+                                <p class="text-sm text-white/80">${fav.time} phút</p>
+                            </div>
+                            <div class="flex gap-2">
+                                <button class="load-favorite-btn p-2 bg-white/20 rounded-full" data-time="${fav.time}">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                                    </svg>
+                                </button>
+                                <button class="remove-favorite-btn p-2 bg-white/20 rounded-full" data-name="${fav.name}">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+                        `;
+                        favoritesList.appendChild(favItem);
+                    });
+                    
+                    // Add event listeners to favorite buttons
+                    document.querySelectorAll('.load-favorite-btn').forEach(btn => {
+                        btn.addEventListener('click', function() {
+                            const minutes = parseInt(this.dataset.time);
+                            timeInSeconds = minutes * 60;
+                            initialTimeInSeconds = timeInSeconds;
+                            timeSlider.value = minutes;
+                            timeValue.textContent = minutes;
+                            updateTimerDisplay();
+                            updateProgressRing(1);
+                        });
+                    });
+                    
+                    document.querySelectorAll('.remove-favorite-btn').forEach(btn => {
+                        btn.addEventListener('click', function() {
+                            const name = this.dataset.name;
+                            removeFavorite(name);
+                        });
+                    });
+                } else {
+                    noFavoritesMsg.style.display = 'block';
+                }
+            }
+            
+            function removeFavorite(name) {
+                let favorites = JSON.parse(localStorage.getItem('timerFavorites')) || [];
+                favorites = favorites.filter(fav => fav.name !== name);
+                localStorage.setItem('timerFavorites', JSON.stringify(favorites));
+                loadFavorites();
+            }
+            
+            // Custom preset functions
+            function saveCustomPreset() {
+                const name = presetName.value.trim();
+                const time = parseInt(presetTime.value);
+                
+                if (name && time > 0) {
+                    const customPreset = {
+                        name: name,
+                        time: time
+                    };
+                    
+                    saveFavorite(customPreset);
+                    
+                    // Reset form
+                    presetName.value = '';
+                    presetTime.value = 10;
+                    customPresetForm.classList.remove('active');
+                }
+            }
+            
+            // Settings functions
+            function openSettingsModal() {
+                settingsModal.classList.add('active');
+            }
+            
+            function closeSettingsModal() {
+                settingsModal.classList.remove('active');
+            }
+            
+            function closeCompletionModal() {
+                completionModal.classList.remove('active');
+            }
+            
+            function saveSettings() {
+                settings.pulseEffect = pulseEffect.checked;
+                settings.waveEffect = waveEffect.checked;
+                settings.soundEnabled = soundEnabled.checked;
+                settings.volume = volumeSlider.value;
+                settings.notificationsEnabled = notificationsEnabled.checked;
+                
+                localStorage.setItem('timerSettings', JSON.stringify(settings));
+                
+                applySettings();
+                closeSettingsModal();
+            }
+            
+            function loadSettings() {
+                const savedSettings = JSON.parse(localStorage.getItem('timerSettings'));
+                
+                if (savedSettings) {
+                    settings = savedSettings;
+                    
+                    // Update UI
+                    pulseEffect.checked = settings.pulseEffect;
+                    waveEffect.checked = settings.waveEffect;
+                    soundEnabled.checked = settings.soundEnabled;
+                    volumeSlider.value = settings.volume;
+                    notificationsEnabled.checked = settings.notificationsEnabled;
+                }
+            }
+            
+            function applySettings() {
+                const pulseElements = document.querySelectorAll('.pulse');
+                const waveElements = document.querySelectorAll('.wave');
+                
+                pulseElements.forEach(el => {
+                    el.style.display = settings.pulseEffect ? 'block' : 'none';
+                });
+                
+                waveElements.forEach(el => {
+                    el.style.display = settings.waveEffect ? 'block' : 'none';
+                });
+                
+                // Request notification permission if enabled
+                if (settings.notificationsEnabled && Notification.permission !== "granted") {
+                    Notification.requestPermission();
+                }
+            }
+            
+            // Handle window focus/blur for better performance
+            window.addEventListener('blur', function() {
+                if (isRunning) {
+                    document.title = timerDisplay.textContent + ' - Đồng hồ đếm ngược';
+                }
+            });
+            
+            window.addEventListener('focus', function() {
+                document.title = 'Đồng hồ đếm ngược đa năng';
+            });
+        });
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'93da5e03e3fb0443',t:'MTc0Njg4OTg2Ny4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
