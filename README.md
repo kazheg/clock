@@ -17,9 +17,6 @@ Một ứng dụng đồng hồ đếm ngược đơn giản và đẹp mắt, �
 * **Bắt đầu/Dừng:** Điều khiển dễ dàng với nút "Bắt đầu" và "Dừng".
 * **Đặt lại:** Nhanh chóng thiết lập lại bộ đếm về thời gian đã chọn.
 
-## Công nghệ sử dụng
-
-* (Liệt kê các công nghệ, thư viện, framework bạn đã sử dụng để xây dựng ứng dụng. Ví dụ: HTML, CSS, JavaScript, React, Vue.js, v.v.)
 
 ## Cài đặt và sử dụng
 
@@ -51,13 +48,3 @@ Nếu bạn muốn đóng góp vào dự án này, xin vui lòng:
 ## Tác giả
 
 * github.com/kazheg
-
----
-
-**Lưu ý:**
-
-* Hãy thay thế các phần `[link_ảnh_chụp_màn_hình_nếu_có]`, `[link_demo_nếu_có]`, `[địa_chỉ_repository_của_bạn]`, `[Tên của bạn]`, `[Link GitHub của bạn]`, và thông tin về **Công nghệ sử dụng** cũng như **Giấy phép** bằng thông tin thực tế của dự án bạn.
-* Bạn có thể thêm các phần khác vào file `README.md` nếu cần thiết, chẳng hạn như hướng dẫn nâng cao, các vấn đề đã biết, hoặc lộ trình phát triển.
-* Một ảnh chụp màn hình ngắn gọn của ứng dụng sẽ giúp người xem dễ hình dung hơn về dự án của bạn.
-
-Chúc dự án của bạn thành công!
